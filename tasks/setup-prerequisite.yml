@@ -1,0 +1,80 @@
+---
+- name: Install prerequisites with apt
+  apt:
+    name: "{{ domoticz_prerequisite }}"
+    state: present
+    update_cache: true
+  when: ansible_os_family == "Debian" or ansible_os_family == "Ubuntu"
+
+- name: Install prerequisites with yum
+  yum:
+    name: "{{ domoticz_prerequisite }}"
+    state: present
+    update_cache: true
+  when: ansible_distribution == "CentOS"
+
+- name: Install prerequisites with dnf
+  dnf:
+    name: "{{ domoticz_prerequisite }}"
+    state: present
+  when: ansible_distribution == "Fedora"
+
+- block:
+    - name: Enable jessie backports to be enable to install libssl1.0.0
+      apt_repository:
+        repo: deb http://ftp.de.debian.org/debian jessie-backports main
+        state: present
+
+    - name: Install libssl1.0.0 for Debian 9
+      apt:
+        name: libssl1.0.0
+        state: present
+
+  when: ansible_distribution == "Debian" and ansible_distribution_major_version == "9"
+
+- name: Install packages for Centos 6 to be able to validate SNI
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - python-urllib3
+    - pyOpenSSL
+    - python-ndg_httpsclient
+    - python-pyasn1
+  when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "6"
+
+- file:
+    src: /usr/lib/x86_64-linux-gnu/libcurl.so.4
+    dest: /usr/lib/x86_64-linux-gnu/libcurl.so.3
+    owner: root
+    group: root
+    state: link
+  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "18"
+
+- file:
+    src: /lib/x86_64-linux-gnu/libusb-1.0.so.0
+    dest: /lib/x86_64-linux-gnu/libusb-0.1.so.4
+    owner: root
+    group: root
+    state: link
+  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "18"
+
+- set_fact: 
+      run_in_docker: "{{ lookup('env', 'RUN_IN_DOCKER') | bool }}"
+
+- block:
+  - name: GET systemctl3 from remote repo
+    get_url:
+      url: "https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/master/files/docker/systemctl3.py"
+      dest: "{{ domoticz_download_dir }}/systemctl3.py"
+      mode: 0775
+
+  - file:
+      src: "{{ domoticz_download_dir }}/systemctl3.py"
+      dest: /usr/bin/systemctl
+      owner: root
+      group: root
+      state: link
+    when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "18"
+
+  when: True #run_in_docker

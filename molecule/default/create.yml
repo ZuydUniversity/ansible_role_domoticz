@@ -1,0 +1,64 @@
+---
+- name: Create
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  no_log: false #"{{ not lookup('env', 'MOLECULE_DEBUG') | bool }}"
+  vars:
+    molecule_file: "{{ lookup('env', 'MOLECULE_FILE') }}"
+    molecule_ephemeral_directory: "{{ lookup('env', 'MOLECULE_EPHEMERAL_DIRECTORY') }}"
+    molecule_scenario_directory: "{{ lookup('env', 'MOLECULE_SCENARIO_DIRECTORY') }}"
+    molecule_yml: "{{ lookup('file', molecule_file) | molecule_from_yaml }}"
+  tasks:
+    - name: Create Dockerfiles from image names
+      template:
+        src: "{{ molecule_scenario_directory }}/Dockerfile.j2"
+        dest: "{{ molecule_ephemeral_directory }}/Dockerfile_{{ item.image | regex_replace('[^a-zA-Z0-9_]', '_') }}"
+      with_items: "{{ molecule_yml.platforms }}"
+      register: platforms
+
+    - name: Build an Ansible compatible image
+      docker_image:
+        path: "{{ molecule_ephemeral_directory }}"
+        name: "molecule_local/{{ item.item.image }}"
+        dockerfile: "{{ item.item.dockerfile | default(item.invocation.module_args.dest) }}"
+        force: "{{ item.item.force | default(True) }}"
+      with_items: "{{ platforms.results }}"
+      when: platforms.changed
+
+    - name: Create docker network(s)
+      docker_network:
+        name: "{{ item }}"
+        state: present
+      with_items: "{{ molecule_yml.platforms | molecule_get_docker_networks }}"
+
+    - name: Create molecule instance(s)
+      docker_container:
+        name: "{{ item.name }}"
+        hostname: "{{ item.name }}"
+        image: "{{ item.image }}"
+        state: started
+        recreate: false
+        log_driver: json-file
+        command: "/opt/domoticz/domoticz/domoticz -www 8080 -sslwww 8081 -sslcer /opt/domoticz/domoticz/server_cert.pem"
+        privileged: "{{ item.privileged | default(omit) }}"
+        volumes: "{{ item.volumes | default(omit) }}"
+        tmpfs: "{{ item.tmpfs | default(omit) }}"
+        capabilities: "{{ item.capabilities | default(omit) }}"
+        exposed_ports: "{{ item.exposed_ports | default(omit) }}"
+        published_ports: "{{ item.published_ports | default(omit) }}"
+        ulimits: "{{ item.ulimits | default(omit) }}"
+        networks: "{{ item.networks | default(omit) }}"
+        dns_servers: "{{ item.dns_servers | default(omit) }}"
+      register: server
+      with_items: "{{ molecule_yml.platforms }}"
+      async: 7200
+      poll: 0
+
+    # - name: Wait for instance(s) creation to complete
+    #   async_status:
+    #     jid: "{{ item.ansible_job_id }}"
+    #   register: docker_jobs
+    #   until: docker_jobs.finished
+    #   retries: 300
+    #   with_items: "{{ server.results }}"

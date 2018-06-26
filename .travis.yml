@@ -1,0 +1,39 @@
+---
+dist: bionic
+language: python
+sudo: required
+cache:
+  pip: true
+
+env:
+  global:
+    - fast_finish: true
+    - MAKEFLAGS="-j 2"
+    - PIP='pip'
+    - ANSIBLE_VERSION='ansible'
+    - SCENARIO=default
+
+matrix:
+  include:
+    - python: '3.5'
+      env: SCENARIO=python3 PIP='pip3'
+
+services:
+  - docker
+
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get -qq install --only-upgrade docker-ce -y
+
+install:
+  - $PIP install $ANSIBLE_VERSION molecule docker-py
+
+script:
+  - ansible --version
+  - molecule check --scenario-name $SCENARIO
+  # - molecule test --scenario-name $SCENARIO
+
+notifications:
+  email:
+    on_failure: change
+    on_success: never

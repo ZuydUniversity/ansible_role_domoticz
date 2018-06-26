@@ -1,0 +1,16 @@
+---
+- name: Ensure download directory is present
+  file:
+    path: "{{ domoticz_download_dir }}"
+    state: directory
+
+- include: load-variables.yml
+
+- include: setup-prerequisite.yml
+
+- include: setup-users.yml
+
+- include: build-zwave.yml
+  when: domoticz_zwave_support
+
+- include: build-domoticz.yml

@@ -1,0 +1,1 @@
+domoticz1 ansible_host=192.168.78.21 anisble_become=true ansible_become_method=sudo
