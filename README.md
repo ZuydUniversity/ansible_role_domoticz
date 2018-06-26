@@ -1,7 +1,4 @@
-# wilmardo.domoticz
-
-[![Build Status](https://travis-ci.org/wilmardo/ansible-role-domoticz.svg?branch=master)](https://travis-ci.org/wilmardo/ansible-role-domoticz)
-[![Galaxy](https://img.shields.io/badge/galaxy-wilmardo.domoticz-blue.svg)](https://galaxy.ansible.com/wilmardo/domoticz/)
+# Domoticz
 
 This role installs Domoticz Home Automation System and support for OpenZWave can be enabled.
 
@@ -59,14 +56,6 @@ Install Domoticz with the default settings
 ```yaml
 - hosts: domoticz-servers
   roles:
-     - { role: wilmardo.domoticz }
+     - { role: domoticz }
 ```
 After running the playbook, Domoticz can be found for HTTP at http://ipaddress:8080 and HTTPS at https://ipaddress:8081
-
-## License
-
-BSD-3-Clause-Clear
-
-## Author Information
-
-This role was created in 2017 by [Wilmar den Ouden](https://wilmardenouden.nl).
