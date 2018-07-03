@@ -1,54 +1,14 @@
 # Domoticz
 
-This role installs Domoticz Home Automation System and support for OpenZWave can be enabled.
+This role installs Domoticz Home Automation System and support for OpenZWave can be enabled. The role is used in the vagrant domoticz environment, that can be found in the following repo https://github.com/ZuydUniversity/domoticz-env[https://github.com/ZuydUniversity/domoticz-env]
 
 ## Requirements
 
 None.
 
-## Role Variables
-
 ### Default usage
 
-As default Domoticz is installed and running http on port 8080 and https on port 8081 with the default certificate. 
-If you want to adapt this to your needs look at the [Advanced usage](#advanced-usage) section.
-
-### Advanced usage
-
-For more advanced usage the following variables are available:
-```yaml
-# The directory where the downloaded files will be placed
-domoticz_download_dir: /home/domoticz
-
-# The Domoticz download url
-domoticz_url: https://releases.domoticz.com/releases/release/domoticz_linux_x86_64.tgz
-# The name of the untarred Domoticz directory
-domoticz_src: domoticz
-
-# The user which the Domoticz daemon runs as
-domoticz_user: domoticz
-# The group which the Domoticz daemon runs as
-domoticz_group: domoticz
-# The port for Domoticz to run http (-www daemon option). For ports <1024 root privileges are required, better to setup a reverse proxy with for example Nginx
-domoticz_port: 8080
-# Enable/Disable https for Domoticz
-domoticz_https: true
-# The port for Domoticz to run https (-sslwww daemon option). For ports <1024 root privileges are required, better to setup a reverse proxy with for example Nginx
-domoticz_https_port: 8081
-# Path to SSL certificate, if left default the server_cert.pem from Domoticz will be used (-sslcert daemon option)
-domoticz_ssl_cert: "{{ domoticz_download_dir }}/{{ domoticz_src }}/server_cert.pem"
-
-# Add support for ZWave
-domoticz_zwave_support: true
-# The version of Open-ZWave to be installed (accepts same arguments as version parameter of git module)
-zwave_version: master
-# The Open-ZWave git url
-zwave_url: https://github.com/OpenZWave/open-zwave.git
-```
-
-## Dependencies
-
-None but for Domoticz on Centos 6, Python 3.3 out of the [Software Collections](https://www.softwarecollections.org/en/scls/rhscl/python33/) is installed
+As default Domoticz is installed and running http on port 8080 and https on port 8081 (not working at the moment) with the default certificate.
 
 ## Example Playbook
 
@@ -59,3 +19,45 @@ Install Domoticz with the default settings
      - { role: domoticz }
 ```
 After running the playbook, Domoticz can be found for HTTP at http://ipaddress:8080 and HTTPS at https://ipaddress:8081
+
+## Development Requirements
+
+### Create an environment
+Create a project folder and a venv folder within:
+```
+mkdir myproject
+cd myproject
+python3 -m venv venv
+```
+
+On Windows:
+```
+py -3 -m venv venv
+```
+
+If you needed to install virtualenv because you are on an older version of Python, use the following command instead:
+
+```
+virtualenv venv
+```
+
+On Windows:
+```
+\Python27\Scripts\virtualenv.exe venv
+```
+
+### Activate the environment
+Before you work on your project, activate the corresponding environment:
+```
+. venv/bin/activate
+```
+
+On Windows:
+
+```
+venv\Scripts\activate
+```
+
+Your shell prompt will change to show the name of the activated environment.
+
+
