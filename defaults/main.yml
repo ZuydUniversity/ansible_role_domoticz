@@ -9,8 +9,11 @@ domoticz_src: domoticz
 
 # The user which the Domoticz daemon runs as
 domoticz_user: domoticz
-# The group which the Domoticz daemon runs as
+# The primary group which the Domoticz daemon runs as
 domoticz_group: domoticz
+# Optional secondary groups which the Domoticz daemon is member of
+domoticz_groups:
+#  - dialout
 # The port for Domoticz to run http (-www daemon option). For ports <1024 root privileges are required, better to setup a reverse proxy with for example Nginx
 domoticz_port: 8080
 # Enable/Disable https for Domoticz
